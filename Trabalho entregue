@@ -1,0 +1,1310 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define g_maiorpalavra 50
+#define g_numpalavras 200
+
+long tamanho_arquivo;
+int contador_dicionario=0;
+
+int achar_inicio(char *texto, int indice){ //acha o inicio dos trechos para pergunta
+    if (texto[indice]=='.'){
+        indice--;
+    }
+    while (indice>0 && texto[indice]!='.' && texto[indice]!='?' && texto[indice]!='!') {
+        indice--;
+    }
+    if (indice>0){
+        indice++;
+    }
+    return indice;
+}
+
+int achar_fim(char *texto, int indice){//acha o fim dos trechos para pergunta
+    while (texto[indice]!='.' && texto[indice]!='?' && texto[indice]!='!' && texto[indice]!='\0') {
+        indice++;
+    }
+    if (texto[indice]!='\0'){
+        indice++; // para incluir a pontuação final
+    }
+    return indice;
+}
+
+void tam_Letras(char *texto){ //inicia as frases com letra maiuscula
+    int i=0, aux, aux2, aux_inicio;
+    char resposta;
+    int maiuscula=1; // marcador para saber se é para tornar maiuscula
+    while (texto[i]!='\0'){
+        if (texto[i]==' '){
+
+        }
+        else if (maiuscula && (texto[i]>='a' && texto[i]<='z')) {
+            aux= achar_inicio(texto, i);
+            aux_inicio= aux;
+            aux2= achar_fim(texto, i);
+            printf("\n\nTrecho original: ");
+            while (aux<aux2) {
+                printf("%c", texto[aux]);
+                aux++;
+            }
+            texto[i]=texto[i]-('a'-'A'); // converte para maiúscula
+            aux=aux_inicio; // voltar para o inicio
+            printf("\n\nTrecho alterado: ");
+            while (aux<aux2) {
+                printf("%c", texto[aux]);
+                aux++;
+            }
+            printf("\n\nCorrecao: Todas as frases devem comecar com a letra maiuscula.\n");
+            printf("\nDeseja fazer a alteracao? (s/n): ");
+            do{
+            scanf(" %c", &resposta);
+            }while(resposta!='n' && resposta!='s');
+            if (resposta=='n') {
+                texto[i]=texto[i]+('a'-'A'); // desfazer a conversão
+            }
+            maiuscula= 0;
+        }
+        if (texto[i]=='.' || texto[i]=='?' || texto[i]=='!'){ //se for final de frase liga o maiusculo
+            aux=i;
+            maiuscula=1;
+        }
+        else if (texto[i]!=' ' && texto[i]!='\t' && texto[i]!='\n') {
+            maiuscula=0;
+        }
+        if (texto[i]=='\n'){
+            maiuscula=1;
+        }
+        i++;
+    }
+    palavras_maiusculas_minusculas(texto);
+}
+
+void palavras_maiusculas_minusculas(char *texto){ //torna todas as palavras maiusculas ou minusculas
+    int i=0, k=0, aux=0, minuscula=0, maiuscula=0, inicio_texto, fim_texto, inicio_frase=0;
+    char resposta, trecho[tamanho_arquivo];
+    strcpy(trecho, texto);
+    while (trecho[i]!='\0'){
+        if (i==0 || trecho[i]==' ' || trecho[i]=='\n' || trecho[i]=='('){
+            if (i!=0){
+                i++;
+            }
+            maiuscula=0;
+            minuscula=0;
+            aux=i;
+            while ((trecho[aux]>='a' && trecho[aux]<='z') || (trecho[aux]>='A' && trecho[aux]<='Z')){
+                if (trecho[aux]>='a' && trecho[aux]<='z'){
+                    minuscula++;
+                }
+                else if (trecho[aux]>='A' && trecho[aux]<='Z'){
+                    maiuscula++;
+                }
+                aux++;
+            }
+            if (maiuscula==1 && (trecho[i]>='A' && trecho[i]<='Z') && (trecho[i+1]>='a' && trecho[i+1]<='z')){
+                i=aux;
+                continue;
+            }
+            aux=i;
+            if (maiuscula>0 && minuscula>0){
+                if (maiuscula>=minuscula){ //passa para maiuscula
+                    while ((trecho[aux]!='\n' && trecho[i]!=' ' && trecho[i]!='\0' && trecho[i]!='.') && ((trecho[aux]>='a' && trecho[aux]<='z') || (trecho[aux]>='A' && trecho[aux]<='Z'))) {
+                        if (trecho[i]>='a' && trecho[i]<='z') {
+                            trecho[i]= trecho[i]-('a'-'A');
+                        }
+                        i++;
+                    }
+                }
+                else{ //passa para minuscula
+                    while (trecho[i] != ' ' && trecho[i] != '\0' && trecho[i] != '\n' && ((trecho[aux]>='a' && trecho[aux]<='z') || (trecho[aux]>='A' && trecho[aux]<='Z'))) {
+                        if (trecho[i] >= 'A' && trecho[i] <= 'Z') {
+                            trecho[i] = trecho[i] + ('a' - 'A');
+                        }
+                        i++;
+                    }
+                }
+                i=aux;
+                inicio_texto=achar_inicio(texto, i);
+                fim_texto=achar_fim(texto, i);
+                printf("\n\nTrecho original: ");
+                for (k=inicio_texto; k<fim_texto; k++) {
+                    printf("%c", texto[k]);
+                }
+                printf("\n\nTrecho sugerido: ");
+                for (k= inicio_texto; k<fim_texto; k++) {
+                    printf("%c", trecho[k]);
+                }
+                printf("\n\nCorrecao: Alteracao de palavra para totalmente maiuscula ou minuscula.\n");
+                printf("\nDeseja fazer a alteracao? (s/n): ");
+                do{
+                scanf(" %c", &resposta);
+                }while(resposta!='n' && resposta!='s');
+                if (resposta=='s') {
+                    strcpy(texto, trecho);
+                }
+                else if (resposta=='n'){
+                    strcpy(trecho, texto);
+                }
+            }
+            else{
+                i=aux;
+            }
+        }
+        else{
+        i++;
+        }
+    }
+    sinais_abertura_fechamento(texto);
+}
+
+int aux_sinais_abertura(char *texto, int i){ //arquivo auxiliar caso haja um sinal de abertura dentro de outro
+    int aux=0, resposta=0, auxdaux=0, auxdi=0, inicio_texto, fim_texto,k, libera=1;
+    char trecho[1000];
+    if (texto[i]=='('){ // função para parênteses
+            aux=i;
+            libera=1;
+            aux++;
+            while (texto[aux]!= '.' && texto[aux]!= '?' && texto[aux]!='!' && texto[aux]!='\0'){
+                if (texto[aux]=='[' || texto[aux]=='{' || texto[aux]=='('){
+                        aux=aux_sinais_abertura(texto, aux);
+                    }
+                if (texto[aux]==')'){
+                    i=aux;
+                    libera=0;
+                    return i;
+                }
+                else if (texto[aux]==']'){
+                    inicio_texto=achar_inicio(texto,aux);
+                    fim_texto=achar_fim(texto,aux);
+                    printf("\nTrecho original: ");
+                    for (k=inicio_texto; k<=fim_texto; k++){
+                        printf("%c", texto[k]);
+                    }
+                    printf("\n");
+                    printf("\nCorrecao: Sinais de abertura e fechamento utilizados incorretamente");
+                    printf("\n");
+                    printf("\nDeseja trocar o ] por ) ou descartar ambos?\n[1] Trocar\n[2] Descartar\n");
+                    scanf("%d", &resposta);
+                    if (resposta==1) {
+                        texto[aux]=')';
+                        aux=i;
+                        return i;
+                    }
+                    else if (resposta==2){
+                        auxdaux=aux;
+                        auxdi=i;
+                        while (texto[aux]!= '\0') {
+                            texto[aux]= texto[aux+1];
+                            aux++;
+                        }
+                        aux=auxdaux; // Verifica novamente o próximo caractere
+                        while (texto[i]!= '\0') {
+                            texto[i]= texto[i+1];
+                            i++;
+                        }
+                        i=auxdi;
+                        aux=i;
+                        return i;
+                    }
+                    libera=0;
+                }
+                else if (texto[aux]=='}'){
+                    inicio_texto=achar_inicio(texto,aux);
+                    fim_texto=achar_fim(texto,aux);
+                    printf("\nTrecho original: ");
+                    for (k=inicio_texto; k<=fim_texto; k++){
+                        printf("%c", texto[k]);
+                    }
+                    printf("\n");
+                    printf("\nCorrecao: Sinais de abertura e fechamento utilizados incorretamente");
+                    printf("\n");
+                    printf("\nDeseja trocar o } por ) ou descartar ambos?\n[1] Trocar\n[2] Descartar\n");
+                    do{
+                    scanf(" %d", &resposta);
+                    }while(resposta!=1 && resposta!=2);
+                    if (resposta==1){
+                        texto[aux]=')';
+                        libera=0;
+                        return aux;
+                    }
+                    else if (resposta==2){
+                        auxdaux=aux;
+                        auxdi=i;
+                        while (texto[aux]!= '\0') {
+                            texto[aux]= texto[aux+1];
+                            aux++;
+                        }
+                        aux=auxdaux; // Verifica novamente o próximo caractere
+                        while (texto[i]!= '\0') {
+                            texto[i]= texto[i+1];
+                            i++;
+                        }
+                        i=auxdi;
+                        aux=i;
+                        return i;
+                    }
+                    libera=0;
+                }
+                aux++;
+            }
+            if ((texto[aux]=='.' || texto[aux]=='?' || texto[aux]=='!' || texto[aux]!='\0') && libera==1){
+                while (texto[i]!='\0'){
+                    texto[i]= texto[i+1];
+                    i++;
+                }
+            }
+            i=aux;
+        }
+
+        else if (texto[i]=='['){ // função para colchetes
+            aux=i;
+            libera=1;
+            aux++;
+            while (texto[aux]!= '.' && texto[aux]!= '?' && texto[aux]!= '!' && texto[aux]!='\0'){
+                if (texto[aux]=='[' || texto[aux]=='{' || texto[aux]=='('){
+                    aux=aux_sinais_abertura(texto, aux);
+                }
+                if (texto[aux]== ']'){
+                    i=aux;
+                    libera=0;
+                    return aux;
+
+                }
+                else if (texto[aux]== ')'){
+                    inicio_texto=achar_inicio(texto,aux);
+                    fim_texto=achar_fim(texto,aux);
+                    printf("\nTrecho original: ");
+                    for (k=inicio_texto; k<=fim_texto; k++){
+                        printf("%c", texto[k]);
+                    }
+                    printf("\n");
+                    printf("\nCorrecao: Sinais de abertura e fechamento utilizados incorretamente");
+                    printf("\n");
+                    printf("\nDeseja trocar o ) por ] ou descartar ambos?\n[1] Trocar\n[2] Descartar\n");
+                    do{
+                        scanf(" %d", &resposta);
+                    }while(resposta!=1 && resposta!=2);
+                    if (resposta==1) {
+                        texto[aux]= ']';
+                        libera=0;
+                        return aux;
+                    }
+                    else if (resposta==2){
+                        auxdaux=aux;
+                        auxdi=i;
+                        while (texto[aux]!= '\0'){
+                            texto[aux]= texto[aux+1];
+                            aux++;
+                        }
+                        aux=auxdaux; // Verifica novamente o próximo caractere
+                        while (texto[i]!= '\0') {
+                            texto[i]= texto[i+1];
+                            i++;
+                        }
+                        i=auxdi-1;
+                        return i;
+                    }
+                    libera=0;
+                }
+                else if (texto[aux]== '}'){
+                    inicio_texto=achar_inicio(texto,aux);
+                    fim_texto=achar_fim(texto,aux);
+                    printf("\nTrecho original: ");
+                    for (k=inicio_texto; k<=fim_texto; k++){
+                        printf("%c", texto[k]);
+                    }
+                    printf("\n");
+                    printf("\nCorrecao: Sinais de abertura e fechamento utilizados incorretamente");
+                    printf("\n");
+                    printf("\nDeseja trocar o } por ] ou descartar ambos?\n[1] Trocar\n[2] Descartar\n");
+                    do{
+                        scanf(" %d", &resposta);
+                    }while(resposta!=1 && resposta!=2);
+                    if (resposta==1){
+                        texto[aux]= ']';
+                        return aux;
+                    }
+                    else if (resposta==2){
+                        auxdaux=aux;
+                        auxdi=i;
+                        while (texto[aux]!= '\0') {
+                            texto[aux]= texto[aux+1];
+                            aux++;
+                        }
+                        aux=auxdaux; // Verifica novamente o próximo caractere
+                        while (texto[i]!= '\0') {
+                            texto[i]= texto[i+1];
+                            i++;
+                        }
+                        i=auxdi;
+                    }
+                }
+                aux++;
+                libera=0;
+            }
+            if ((texto[aux]=='.' || texto[aux]=='?' || texto[aux]=='!' || texto[aux]!='\0') && libera==1){
+                while (texto[i]!='\0'){
+                    texto[i]= texto[i+1];
+                    i++;
+                }
+            }
+            i=aux;
+        }
+        else if (texto[i]=='{') { // função para chaves
+            aux=i;
+            libera=1;
+            aux++;
+            while (texto[aux]!= '.' && texto[aux]!= '?' && texto[aux]!= '!'){
+                if (texto[aux]=='[' || texto[aux]=='{' || texto[aux]=='('){
+                    aux=aux_sinais_abertura(texto, aux);
+                }
+                if (texto[aux]=='}'){
+                    i=aux;
+                    libera=0;
+                    return aux;
+                }
+                else if (texto[aux]==']'){
+                    inicio_texto=achar_inicio(texto,aux);
+                    fim_texto=achar_fim(texto,aux);
+                    printf("\nTrecho original: ");
+                    for (k=inicio_texto; k<=fim_texto; k++){
+                        printf("%c", texto[k]);
+                    }
+                    printf("\n");
+                    printf("\nCorrecao: Sinais de abertura e fechamento utilizados incorretamente");
+                    printf("\n");
+                    printf("\nDeseja trocar o ] por } ou descartar ambos?\n[1] Trocar\n[2] Descartar\n");
+                    do{
+                        scanf(" %d", &resposta);
+                    }while(resposta!=1 && resposta!=2);
+                    if (resposta==1){
+                        texto[aux]='}';
+                    }
+                    else if (resposta==2){
+                        auxdaux=aux;
+                        auxdi=i;
+                        while (texto[aux]!= '\0') {
+                            texto[aux]= texto[aux+1];
+                            aux++;
+                        }
+                        aux=auxdaux; // Verifica novamente o próximo caractere
+                        while (texto[i]!= '\0') {
+                            texto[i]= texto[i+1];
+                            i++;
+                        }
+                        i=auxdi;
+                    }
+                    libera=0;
+                }
+                else if (texto[aux]==')'){
+                    inicio_texto=achar_inicio(texto,aux);
+                    fim_texto=achar_fim(texto,aux);
+                    printf("\nTrecho original: ");
+                    for (k=inicio_texto; k<=fim_texto; k++){
+                        printf("%c", texto[k]);
+                    }
+                    printf("\n");
+                    printf("\nCorrecao: Sinais de abertura e fechamento utilizados incorretamente");
+                    printf("\n");
+                    printf("\nDeseja trocar o ) por } ou descartar ambos?\n[1] Trocar\n[2] Descartar\n");
+                    do{
+                    scanf(" %d", &resposta);
+                    }while(resposta!=1 && resposta!=2);
+                    if (resposta==1){
+                        texto[aux]= '}';
+                        return i;
+                    }
+                    else if (resposta==2){
+                        auxdaux=aux;
+                        auxdi=i;
+                        while (texto[aux]!= '\0') {
+                            texto[aux]= texto[aux+1];
+                            aux++;
+                        }
+                        aux=auxdaux; // Verifica novamente o próximo caractere
+                        while (texto[i]!= '\0') {
+                            texto[i]= texto[i+1];
+                            i++;
+                        }
+                        i=auxdi;
+                        aux--; // Verifica novamente o próximo caractere
+                        return i;
+                    }
+                    libera=0;
+                }
+                aux++;
+            }
+            if ((texto[aux]=='.' || texto[aux]=='?' || texto[aux]=='!' || texto[aux]!='\0') && libera==1){
+                while (texto[i]!='\0'){
+                    texto[i]= texto[i+1];
+                    i++;
+                }
+            }
+            i=aux;
+        }
+        else if (texto[i]==']' || texto[i]=='}' || texto[i]==')'){
+            auxdi=i;
+            while (texto[i]!='\0'){
+                texto[i]=texto[i+1];
+                i++;
+            }
+            i=auxdi;
+        }
+    return i;
+}
+
+void sinais_abertura_fechamento(char *texto){ //funcao principal que roda o texto
+    int i=0, aux=0, resposta=0, auxdaux=0, auxdi=0, inicio_texto, fim_texto,k, libera=1;
+    char trecho[1000];
+    while (texto[i]!='\0'){
+        if (texto[i]=='('){ // função para parênteses
+            aux=i;
+            libera=1;
+            while (texto[aux]!= '.' && texto[aux]!= '?' && texto[aux]!='!' && texto[aux]!='\0'){
+                if (texto[aux+1]=='[' || texto[aux+1]=='{' || texto[aux+1]=='('){
+                        aux=aux_sinais_abertura(texto, aux+1);
+                        aux++;
+                    }
+                if (texto[aux]==')'){
+                    i=aux;
+                    libera=0;
+                    //continue;
+                }
+                else if (texto[aux]==']'){ //fechamento diferente
+                    inicio_texto=achar_inicio(texto,aux);
+                    fim_texto=achar_fim(texto,aux);
+                    printf("\nTrecho original: ");
+                    for (k=inicio_texto; k<=fim_texto; k++){
+                        printf("%c", texto[k]);
+                    }
+                    printf("\n");
+                    printf("\nCorrecao: Sinais de abertura e fechamento utilizados incorretamente");
+                    printf("\n");
+                    printf("\nDeseja trocar o ] por ) ou descartar ambos?\n[1] Trocar\n[2] Descartar\n");
+                    do{
+                    scanf(" %d", &resposta);
+                    }while(resposta!=1 && resposta!=2);
+                    if (resposta==1) {
+                        texto[aux]=')';
+                        aux=i;
+                    }
+                    else if (resposta==2){
+                        auxdaux=aux;
+                        auxdi=i;
+                        while (texto[aux]!= '\0') {
+                            texto[aux]= texto[aux+1];
+                            aux++;
+                        }
+                        aux=auxdaux; // Verifica novamente o próximo caractere
+                        while (texto[i]!= '\0') {
+                            texto[i]= texto[i+1];
+                            i++;
+                        }
+                        i=auxdi;
+                        aux=i;
+                    }
+                    libera=0;
+                }
+                else if (texto[aux]=='}'){ //fechamento diferente
+                    inicio_texto=achar_inicio(texto,aux);
+                    fim_texto=achar_fim(texto,aux);
+                    printf("\nTrecho original: ");
+                    for (k=inicio_texto; k<=fim_texto; k++){
+                        printf("%c", texto[k]);
+                    }
+                    printf("\n");
+                    printf("\nCorrecao: Sinais de abertura e fechamento utilizados incorretamente");
+                    printf("\n");
+                    printf("\nDeseja trocar o } por ) ou descartar ambos?\n[1] Trocar\n[2] Descartar\n");
+                    do{
+                    scanf(" %d", &resposta);
+                    }while(resposta!=1 && resposta!=2);
+                    if (resposta==1){
+                        texto[aux]=')';
+                        libera=0;
+                    }
+                    else if (resposta==2){
+                        auxdaux=aux;
+                        auxdi=i;
+                        while (texto[aux]!= '\0') {
+                            texto[aux]= texto[aux+1];
+                            aux++;
+                        }
+                        aux=auxdaux; // verifica o próximo caractere
+                        while (texto[i]!= '\0') {
+                            texto[i]= texto[i+1];
+                            i++;
+                        }
+                        i=auxdi;
+                        aux=i;
+                    }
+                    libera=0;
+                }
+                aux++;
+            }
+            if ((texto[aux]=='.' || texto[aux]=='?' || texto[aux]=='!' || texto[aux]!='\0') && libera==1){ //se nao tiver nada e tiver chegado no final da frase
+                while (texto[i]!='\0'){
+                    texto[i]= texto[i+1];
+                    i++;
+                }
+            }
+            i=aux;
+        }
+
+        else if (texto[i]=='['){ // função para colchetes
+            aux=i;
+            libera=1;
+            while (texto[aux]!= '.' && texto[aux]!= '?' && texto[aux]!= '!' && texto[aux]!='\0'){
+                if (texto[aux+1]=='[' || texto[aux+1]=='{' || texto[aux+1]=='('){
+                    aux=aux_sinais_abertura(texto, aux+1);
+                    aux++;
+                }
+                if (texto[aux]== ']'){
+                    i=aux;
+                    libera=0;
+                    //continue;
+                }
+                else if (texto[aux]== ')'){ //fechamento diferente
+                    inicio_texto=achar_inicio(texto,aux);
+                    fim_texto=achar_fim(texto,aux);
+                    printf("\nTrecho original: ");
+                    for (k=inicio_texto; k<=fim_texto; k++){
+                        printf("%c", texto[k]);
+                    }
+                    printf("\n");
+                    printf("\nCorrecao: Sinais de abertura e fechamento utilizados incorretamente");
+                    printf("\n");
+                    printf("\nDeseja trocar o ) por ] ou descartar ambos?\n[1] Trocar\n[2] Descartar\n");
+                    do{
+                    scanf(" %d", &resposta);
+                    }while(resposta!=1 && resposta!=2);
+                    if (resposta==1) {
+                        texto[aux]= ']';
+                    }
+                    else if (resposta==2){
+                        auxdaux=aux;
+                        auxdi=i;
+                        while (texto[aux]!= '\0'){
+                            texto[aux]= texto[aux+1];
+                            aux++;
+                        }
+                        aux=auxdaux;
+                        while (texto[i]!= '\0') {
+                            texto[i]= texto[i+1];
+                            i++;
+                        }
+                        i=auxdi-1;
+                    }
+                    libera=0;
+                }
+                else if (texto[aux]== '}'){ //fechamento diferente
+                    inicio_texto=achar_inicio(texto,aux);
+                    fim_texto=achar_fim(texto,aux);
+                    printf("\nTrecho original: ");
+                    for (k=inicio_texto; k<=fim_texto; k++){
+                        printf("%c", texto[k]);
+                    }
+                    printf("\n");
+                    printf("\nCorrecao: Sinais de abertura e fechamento utilizados incorretamente");
+                    printf("\n");
+                    printf("\nDeseja trocar o } por ] ou descartar ambos?\n[1] Trocar\n[2] Descartar\n");
+                    do{
+                    scanf(" %d", &resposta);
+                    }while(resposta!=1 && resposta!=2);
+                    if (resposta==1){
+                        texto[aux]= ']';
+                    }
+                    else if (resposta==2){
+                        auxdaux=aux;
+                        auxdi=i;
+                        while (texto[aux]!= '\0') {
+                            texto[aux]= texto[aux+1];
+                            aux++;
+                        }
+                        aux=auxdaux;
+                        while (texto[i]!= '\0') {
+                            texto[i]= texto[i+1];
+                            i++;
+                        }
+                        i=auxdi;
+                    }
+                    libera=0;
+                }
+                aux++;
+            }
+            if ((texto[aux]=='.' || texto[aux]=='?' || texto[aux]=='!' || texto[aux]!='\0') && libera==1){ //se nao tiver nada e tiver chegado no final da frase
+                while (texto[i]!='\0'){
+                    texto[i]= texto[i+1];
+                    i++;
+                }
+            }
+            i=aux;
+        }
+        else if (texto[i]=='{') { // função para chaves
+            aux=i;
+            libera=1;
+            while (texto[aux]!= '.' && texto[aux]!= '?' && texto[aux]!= '!'){
+                if (texto[aux+1]=='[' || texto[aux+1]=='{' || texto[aux+1]=='('){
+                        aux=aux_sinais_abertura(texto, aux+1);
+                        aux++;
+                    }
+                if (texto[aux]=='}'){
+                    i=aux;
+                    libera=0;
+                    //continue;
+                }
+                else if (texto[aux]==']'){ //fechamento diferente
+                    inicio_texto=achar_inicio(texto,aux);
+                    fim_texto=achar_fim(texto,aux);
+                    printf("\nTrecho original: ");
+                    for (k=inicio_texto; k<=fim_texto; k++){
+                        printf("%c", texto[k]);
+                    }
+                    printf("\n");
+                    printf("\nCorrecao: Sinais de abertura e fechamento utilizados incorretamente");
+                    printf("\n");
+                    printf("\nDeseja trocar o ] por } ou descartar ambos?\n[1] Trocar\n[2] Descartar\n");
+                    do{
+                    scanf(" %d", &resposta);
+                    }while(resposta!=1 && resposta!=2);
+                    if (resposta==1){
+                        texto[aux]='}';
+                    }
+                    else if (resposta==2){
+                        auxdaux=aux;
+                        auxdi=i;
+                        while (texto[aux]!= '\0') {
+                            texto[aux]= texto[aux+1];
+                            aux++;
+                        }
+                        aux=auxdaux;
+                        while (texto[i]!= '\0') {
+                            texto[i]= texto[i+1];
+                            i++;
+                        }
+                        i=auxdi;
+                    }
+                    libera=0;
+                }
+                else if (texto[aux]==')'){ //fechamento diferente
+                    inicio_texto=achar_inicio(texto,aux);
+                    fim_texto=achar_fim(texto,aux);
+                    printf("\nTrecho original: ");
+                    for (k=inicio_texto; k<=fim_texto; k++){
+                        printf("%c", texto[k]);
+                    }
+                    printf("\n");
+                    printf("\nCorrecao: Sinais de abertura e fechamento utilizados incorretamente");
+                    printf("\n");
+                    printf("\nDeseja trocar o ) por } ou descartar ambos?\n[1] Trocar\n[2] Descartar\n");
+                    do{
+                    scanf(" %d", &resposta);
+                    }while(resposta!=1 && resposta!=2);
+                    if (resposta==1){
+                        texto[aux]= '}';
+                    }
+                    else if (resposta==2){
+                        auxdaux=aux;
+                        auxdi=i;
+                        while (texto[aux]!= '\0') {
+                            texto[aux]= texto[aux+1];
+                            aux++;
+                        }
+                        aux=auxdaux;
+                        while (texto[i]!= '\0') {
+                            texto[i]= texto[i+1];
+                            i++;
+                        }
+                        i=auxdi;
+                        aux--;
+                    }
+                    libera=0;
+                }
+                aux++;
+            }
+            if ((texto[aux]=='.' || texto[aux]=='?' || texto[aux]=='!' || texto[aux]!='\0') && libera==1){ //se nao tiver nada e tiver chegado no final da frase
+                while (texto[i]!='\0'){
+                    texto[i]= texto[i+1];
+                    i++;
+                }
+            }
+            i=aux;
+        }
+        else if (texto[i]==']' || texto[i]=='}' || texto[i]==')'){
+            auxdi=i;
+            while (texto[i]!='\0'){
+                texto[i]=texto[i+1];
+                i++;
+            }
+            i=auxdi;
+            i--;
+        }
+        i++;
+    }
+    numeros_txt(texto);
+}
+
+void numeros_txt(char *texto){ //escreve os numeros por extenso
+    int i=0, aux, fim, j=0, aux_inicio, aux_fim, k, condicao;
+    char trecho[tamanho_arquivo], resposta;
+    strcpy(trecho, texto);
+    while (texto[i]!='\0'){
+        condicao=0;
+        if ((!(trecho[i-1]>='0' && trecho[i-1]<='9') && !(trecho[i+2]>='0' && trecho[i+2]<='9')) && trecho[i]=='1' && trecho[i+1]=='0'){
+            condicao=1;
+            fim= strlen(trecho);
+            for (aux=fim; aux>i; aux--){
+                trecho[aux+2]=trecho[aux+1];
+            }
+            trecho[i]='d';
+            trecho[i+1]='e';
+            trecho[i+2]='z';
+        }
+        else if (!((trecho[i-1]>='0' && trecho[i-1]<='9') && (trecho[i+1]>='0' && trecho[i+1]<='9')) && trecho[i]=='0'){
+            condicao=1;
+            fim= strlen(trecho);
+            for (aux=fim; aux>i; aux--){
+                trecho[aux+3]=trecho[aux];
+            }
+            trecho[i]='z';
+            trecho[i+1]='e';
+            trecho[i+2]='r';
+            trecho[i+3]='o';
+        }
+        else if ((!(trecho[i-1]>='0' && trecho[i-1]<='9') && !(trecho[i+1]>='0' && trecho[i+1]<='9')) && trecho[i]=='1'){
+            condicao=1;
+            fim= strlen(trecho);
+            for (aux=fim; aux>i; aux--){
+                trecho[aux+1]=trecho[aux];
+            }
+            trecho[i]='u';
+            trecho[i+1]='m';
+        }
+        else if ((!(trecho[i-1]>='0' && trecho[i-1]<='9') && !(trecho[i+1]>='0' && trecho[i+1]<='9')) && trecho[i]=='2'){
+            condicao=1;
+            fim= strlen(trecho);
+            for (aux=fim; aux>i; aux--){
+                trecho[aux+3]=trecho[aux];
+            }
+            trecho[i]='d';
+            trecho[i+1]='o';
+            trecho[i+2]='i';
+            trecho[i+3]='s';
+        }
+        else if ((!(trecho[i-1]>='0' && trecho[i-1]<='9') && !(trecho[i+1]>='0' && trecho[i+1]<='9')) && trecho[i]=='3'){
+            condicao=1;
+            fim= strlen(trecho);
+            for (aux=fim; aux>i; aux--){
+                trecho[aux+3]=trecho[aux];
+            }
+            trecho[i]='t';
+            trecho[i+1]='r';
+            trecho[i+2]='e';
+            trecho[i+3]='s';
+        }
+        else if ((!(trecho[i-1]>='0' && trecho[i-1]<='9') && !(trecho[i+1]>='0' && trecho[i+1]<='9')) && trecho[i]=='4'){
+            condicao=1;
+            fim= strlen(trecho);
+            for (aux=fim; aux>i; aux--){
+                trecho[aux+5]=trecho[aux];
+            }
+            trecho[i]='q';
+            trecho[i+1]='u';
+            trecho[i+2]='a';
+            trecho[i+3]='t';
+            trecho[i+4]='r';
+            trecho[i+5]='o';
+        }
+        else if ((!(trecho[i-1]>='0' && trecho[i-1]<='9') && !(trecho[i+1]>='0' && trecho[i+1]<='9')) && trecho[i]=='5'){
+            condicao=1;
+            fim= strlen(trecho);
+            for (aux=fim; aux>i; aux--){
+                trecho[aux+4]=trecho[aux];
+            }
+            trecho[i]='c';
+            trecho[i+1]='i';
+            trecho[i+2]='n';
+            trecho[i+3]='c';
+            trecho[i+4]='o';
+        }
+        else if ((!(trecho[i-1]>='0' && trecho[i-1]<='9') && !(trecho[i+1]>='0' && trecho[i+1]<='9')) && texto[i]=='6'){
+            condicao=1;
+            fim= strlen(trecho);
+            for (aux=fim; aux>i; aux--){
+                trecho[aux+3]=trecho[aux];
+            }
+            trecho[i]='s';
+            trecho[i+1]='e';
+            trecho[i+2]='i';
+            trecho[i+3]='s';
+        }
+        else if ((!(trecho[i-1]>='0' && trecho[i-1]<='9') && !(trecho[i+1]>='0' && trecho[i+1]<='9')) && trecho[i]=='7'){
+            condicao=1;
+            fim= strlen(trecho);
+            for (aux=fim; aux>i; aux--){
+                trecho[aux+3]=trecho[aux];
+            }
+            trecho[i]='s';
+            trecho[i+1]='e';
+            trecho[i+2]='t';
+            trecho[i+3]='e';
+        }
+        else if ((!(trecho[i-1]>='0' && trecho[i-1]<='9') && !(trecho[i+1]>='0' && trecho[i+1]<='9')) && trecho[i]=='8'){
+            condicao=1;
+            fim= strlen(trecho);
+            for (aux=fim; aux>i; aux--){
+                trecho[aux+3]=trecho[aux];
+            }
+            trecho[i]='o';
+            trecho[i+1]='i';
+            trecho[i+2]='t';
+            trecho[i+3]='o';
+        }
+        else if ((!(trecho[i-1]>='0' && trecho[i-1]<='9') && !(trecho[i+1]>='0' && trecho[i+1]<='9')) && trecho[i]=='9'){
+            condicao=1;
+            fim= strlen(trecho);
+            for (aux=fim; aux>i; aux--){
+                trecho[aux+3]=trecho[aux];
+            }
+            trecho[i]='n';
+            trecho[i+1]='o';
+            trecho[i+2]='v';
+            trecho[i+3]='e';
+        }
+        if (condicao==1){ //se houve troca
+            aux_inicio=achar_inicio(texto, i);
+            aux_fim=achar_fim(texto, i);
+            printf("\n\nTrecho original: ");
+            for (k= aux_inicio; k<aux_fim; k++) {
+                printf("%c", texto[k]);
+            }
+            aux_inicio=achar_inicio(trecho, i);
+            aux_fim=achar_fim(trecho, i);
+            printf("\n\nTrecho sugerido: ");
+            for (k=aux_inicio; k<aux_fim; k++) {
+                    printf("%c", trecho[k]);
+            }
+            printf("\n\nCorrecao: Numeros menores ou iguais a 10 devem ser escritos por extenso.\n");
+            printf("\nDeseja fazer a alteracao? (s/n): ");
+            do{
+                scanf(" %c", &resposta);
+            }while(resposta!='s' && resposta!='n');
+            if (resposta=='s') {
+                strcpy(texto, trecho);
+            }
+            else if (resposta=='n'){
+                strcpy(trecho, texto);
+            }
+        }
+        i++;
+    }
+    caracteres_Especiais(texto);
+}
+
+void caracteres_Especiais(char *texto){ //eliminacao de caracteres especiais
+    int i=0, aux, inicio_texto, fim_texto, k;
+    char trecho[tamanho_arquivo], resposta;
+    while (texto[i]!='\0'){
+        if (texto[i]=='@' || texto[i]=='#' || texto[i]=='$' || texto[i]=='%' || texto[i]=='&' || texto[i]=='*'){ //verifica a presenca
+            aux=i;
+            inicio_texto=achar_inicio(texto, i);
+            fim_texto=achar_fim(texto, i);
+            printf("\n\nTrecho original: ");
+            for (k=inicio_texto; k<fim_texto; k++) {
+                printf("%c", texto[k]);
+            }
+            strcpy(trecho, texto);
+            if (trecho[i+1]==' ' && trecho[i-1]==' '){ //se nao tiver colado em palavras
+                while (trecho[aux]!='\0'){
+                trecho[aux]=trecho[aux+2];
+                aux++;
+                }
+            }
+            else{
+                while (trecho[aux]!='\0'){ //se tiver colado em alguma letra ou outro sinal
+                    trecho[aux]=trecho[aux+1];
+                    aux++;
+                }
+            }
+            inicio_texto=achar_inicio(trecho, i);
+            fim_texto=achar_fim(trecho, i);
+            printf("\n\nTrecho sugerido: ");
+            for (k=inicio_texto; k<fim_texto; k++) {
+                printf("%c", trecho[k]);
+            }
+            printf("\n\nCorrecao: Eliminar caracteres especiais.\n");
+            printf("\nDeseja fazer a alteracao? (s/n): ");
+            do{
+                scanf(" %c", &resposta);
+            }while(resposta!='s' && resposta!='n');
+            if (resposta=='s'){
+                strcpy(texto, trecho);
+                i--;
+            }
+        }
+        i++;
+    }
+    espaco_branco(texto);
+}
+
+void espaco_branco(char *texto){
+    int i=0, j=0, k, aux_inicio, aux_fim, aux;
+    int duplicado_inicio, duplicado_fim, frase_inicio, frase_fim;
+    char trecho[tamanho_arquivo];
+    char resposta;
+    while (texto[i]!='\0') {
+        if (texto[i]==' ' && texto[i+1]==' '){ //remocao para dois espacos seguidos
+            strcpy(trecho, texto);
+            aux=i;
+            while (trecho[aux]!='\0') {
+                trecho[aux]=trecho[aux+1];
+                aux++;
+            }
+            aux_inicio=achar_inicio(texto, i);
+            aux_fim=achar_fim(texto, i);
+            printf("\n\nTrecho original: ");
+            for (k= aux_inicio; k<aux_fim; k++) {
+                printf("%c", texto[k]);
+            }
+            aux_inicio=achar_inicio(trecho, i);
+            aux_fim=achar_fim(trecho, i);
+            printf("\n\nTrecho sugerido: ");
+            for (k=aux_inicio; k<aux_fim; k++) {
+                    printf("%c", trecho[k]);
+            }
+            printf("\n\nCorrecao: Eliminacao de um espaco extra encontrado.\n");
+            printf("\nDeseja fazer a alteracao? (s/n): ");
+            do{
+                scanf(" %c", &resposta);
+            }while(resposta!='s' && resposta!='n');
+            if (resposta=='s'){
+                strcpy(texto, trecho);
+            }
+            else if (resposta=='n'){
+                strcpy(trecho, texto);
+            }
+        }
+        i++;
+    }
+}
+
+int conferePalavra(const char *dicionario,const char *palavra){ //verifica o quanto as palavras sao parecidas para uso posterior
+    int cont=0;
+    int i=0, j=0;
+    int tam_dicio= strlen(dicionario);
+    int tam_palavra= strlen(palavra);
+    if (tam_dicio>tam_palavra){
+        return 50;
+    }
+    while (palavra[j]!='\0'){
+        if (dicionario[i]!=palavra[j]){ //comeco da comparacao
+            j++;
+            cont++;
+        }
+        else{
+            i++;
+            j++;
+        }
+    }
+    if (dicionario[i]!='\0'){
+        return 50;
+    }
+    return cont;
+}
+
+void corrige_palavras(char *texto, char (*dicio)[50], const char *nomedicio){
+    char resposta;
+    FILE* dicionario= fopen(nomedicio, "a+");
+    char palavra[50];
+    char palavras_diferentes[80][50];
+    int ind=0, aux, copia, inicio_trecho, fim_trecho;
+    while (dicio[contador_dicionario][0]!='\0'){
+        contador_dicionario++;
+    }
+    int cont[contador_dicionario];
+    int i=0, k=0, j=0, n=0, comparador, liberador, tam_palavra, tam_palavra2, dif_palavras, somador;
+    int indice[3], index[3];
+    while (texto[i]!='\0'){
+        if (texto[i]==' ' || i==0 || texto[i]=='('){
+            if (i==0){
+            }
+            else{
+                i++;
+            }
+            k=0;
+            liberador=1;
+            aux=i;
+            while ((texto[aux]!=' ' && texto[aux]!='\0' && texto[aux]!='.' && texto[aux]!=',' && texto[aux]!='!' && texto[aux]!='?'&& texto[aux]!=')') && (texto[aux]>='a' && texto[aux]<='z')){
+                if ((texto[aux-1]==' ' && texto[aux]>='A' && texto[aux]<='Z') || (texto[aux]>='A' && texto[aux]<='Z' && aux==0)){
+                    liberador=0; //liberador ignora palavras que começam com letras maiusculas
+                    break;
+                }
+                if (texto[aux-1]==' ' && !((texto[aux]>='A' && texto[aux]<='Z') || (texto[aux]>='a' && texto[aux]<='z'))){
+                    liberador=0;
+                    break;
+                }
+                palavra[k]=texto[aux];
+                k++;
+                aux++;
+            }
+            if (strlen(palavra)==0){
+
+            }
+            else{
+            if (liberador==1){ //se a palavra nao for nome pessoal ou acronimo
+                palavra[k]='\0';
+                for (j=0; j<=contador_dicionario; j++){
+                    comparador= strcmp(palavra, dicio[j]);
+                    if (comparador==0){ //compara se a palavra eh igual
+                        break;
+                    }
+                }
+                if (comparador!=0){ // se a palavra for diferente
+                    for (int p=0;p<3;p++){
+                        indice[p]=50;
+                    }
+                    for (int p=0;p<3;p++){
+                        index[p]=-1;
+                    }
+                    for (j=0; j<contador_dicionario; j++){ //compara com todas do dicionario
+                        cont[j]= conferePalavra(dicio[j], palavra);
+                        if (cont[j]<strlen(palavra)){
+                            if (cont[j]<indice[0]){
+                                indice[2]=indice[1];
+                                index[2]=index[1];
+                                indice[1]=indice[0];
+                                index[1]=index[0];
+                                indice[0]= cont[j];
+                                index[0]=j;
+                                ind++;
+                            }
+                            else if (cont[j]<indice[1]){
+                                indice[2]=indice[1];
+                                index[2]=index[1];
+                                indice[1]=cont[j];
+                                index[1]=j;
+                                ind++;
+                            }
+                            else if (cont[j]<indice[2]){
+                                indice[2]=cont[j];
+                                index[2]=j;
+                                ind++;
+                            }
+                        }
+                    }
+                    if (ind>3){
+                        ind=3;
+                    }
+                    if (ind!=0){
+                        inicio_trecho=achar_inicio(texto, i);
+                        fim_trecho=achar_fim(texto, i);
+                        printf("\n\nTrecho original: ");
+                        for (k= inicio_trecho; k<fim_trecho; k++) {
+                            printf("%c", texto[k]);
+                        }
+                        printf("\nA palavra %s nao esta no dicionario. Aqui esta(o) um(as) sugestao(oes) de troca: ", palavra);
+                        for (j=0; j<ind; j++){
+                            printf("\n[%d] %s", j+1, dicio[index[j]]);
+                        }
+                        printf("\n[r] Remover");
+                        printf("\n[a] Adicionar ao dicionario");
+                        do{
+                        scanf(" %c", &resposta);
+                        }while(resposta!='1' && resposta!='2' && resposta!='3' && resposta!='r' && resposta!='a');
+
+                        if (resposta=='1'){ //op 1, se houver
+                            tam_palavra=strlen(dicio[index[0]]);
+                            tam_palavra2=strlen(palavra);
+                            dif_palavras=tam_palavra2-tam_palavra;
+                            for (copia=0; copia<tam_palavra; copia++){
+                                texto[i]= dicio[index[0]][copia];
+                                i++;
+                            }
+                            aux=i;
+                            while (texto[aux]!='\0'){
+                                texto[aux]= texto[aux+dif_palavras];
+                                aux++;
+                            }
+                        }
+                        else if (resposta=='2'){ //op 2, se houver
+                            tam_palavra=strlen(dicio[index[1]]);
+                            tam_palavra2=strlen(palavra);
+                            dif_palavras=tam_palavra2-tam_palavra;
+                            for (copia=0; copia<tam_palavra; copia++){
+                                texto[i]= dicio[index[1]][copia];
+                                i++;
+                            }
+                            aux=i;
+                            while (texto[aux]!='\0'){
+                                texto[aux]= texto[aux+dif_palavras];
+                                aux++;
+                            }
+                        }
+                        else if (resposta=='3'){ //op 3, se houver
+                            tam_palavra=strlen(dicio[index[2]]);
+                            tam_palavra2=strlen(palavra);
+                            dif_palavras=tam_palavra2-tam_palavra;
+                            for (copia=0; copia<tam_palavra; copia++){
+                                texto[i]= dicio[index[2]][copia];
+                                i++;
+                            }
+                            aux=i;
+                            while (texto[aux]!='\0'){
+                                texto[aux]= texto[aux+dif_palavras];
+                                aux++;
+                            }
+                        }
+                        else if (resposta=='r'){ //remover
+                            aux=i;
+                            tam_palavra=strlen(palavra)+1;
+                            while (texto[aux]!='\0'){
+                                texto[aux]=texto[aux+tam_palavra];
+                                aux++;
+                            }
+                        }
+                        else if(resposta=='a'){
+                            while (dicio[contador_dicionario][0]!='\0'){
+                                contador_dicionario++;
+                            }
+                            strcpy(dicio[contador_dicionario], palavra);
+                            fprintf(dicionario, "\n%s", palavra);
+                        }
+                    }
+                    else{ //se nao tiver nenhuma parecida
+                        if (strlen(palavra)==0){
+                            while (dicio[contador_dicionario][0]!='\0'){
+                                contador_dicionario++;
+                            }
+                            strcpy(dicio[contador_dicionario], palavra);
+                            fprintf(dicionario, "\n%s", palavra);
+                        }
+                        else{
+                        inicio_trecho=achar_inicio(texto, i);
+                        fim_trecho=achar_fim(texto, i);
+                        printf("\n\nTrecho original: ");
+                        for (k= inicio_trecho; k<fim_trecho; k++) {
+                            printf("%c", texto[k]);
+                        }
+                        printf("\n\nA palavra %s nao esta no dicionario e nao ha nenhuma semelhante, deseja remover ou adicionar ao dicionario? (r/a) ", palavra);
+                        do{
+                        scanf(" %c", &resposta);
+                        }while(resposta!='r' && resposta!='a');
+                        tam_palavra=strlen(palavra);
+                        if (resposta=='r'){
+                            aux=i;
+                            tam_palavra=strlen(palavra);
+                            while (texto[aux]!='\0'){
+                                texto[aux]=texto[aux+tam_palavra+1];
+                                aux++;
+                            }
+                        }
+                        else if(resposta=='a'){
+                            while (dicio[contador_dicionario][0]!='\0'){
+                                contador_dicionario++;
+                            }
+                            strcpy(dicio[contador_dicionario], palavra);
+                            fprintf(dicionario, "\n%s", palavra);
+                        }
+                        }
+                    }
+                }
+            }
+            else{
+                i=aux;
+            }
+        }
+        }
+        for (k=0; k<g_maiorpalavra-1; k++){
+            palavra[k]=0;
+        }
+        for (j=0; j<2; j++){
+            indice[j]=0;
+        }
+        palavra[k]='\0';
+        indice[j]='\0';
+        ind=0;
+        i++;
+    }
+    fclose(dicionario);
+}
+
+char* ler_arquivo_como_string(const char *nome_arquivo) {
+    FILE *arquivo=fopen(nome_arquivo, "rb");
+    if (arquivo==NULL) {
+        printf("\nErro ao abrir o arquivo %s\n", nome_arquivo);
+        return NULL;
+    }
+    fseek(arquivo, 0, SEEK_END);
+    long tamanho= ftell(arquivo);
+    rewind(arquivo);
+
+    tamanho_arquivo= tamanho+1;
+
+    char *conteudo=(char*)malloc((tamanho + 100)*sizeof(char));
+    if (conteudo==NULL) {
+        printf("Erro ao alocar memória\n");
+        fclose(arquivo);
+        return NULL;
+    }
+
+    fread(conteudo, sizeof(char), tamanho, arquivo);
+    conteudo[tamanho] = '\0';
+
+    fclose(arquivo);
+    return conteudo;
+}
+
+int main(int argc, char *argv[])
+{
+    char linha[g_maiorpalavra];
+    char palavras_dicionario[g_numpalavras][g_maiorpalavra];
+    FILE *dicionario;
+    char nome_arquivo[100], nome_dicionario[100], nome_arquivo_novo[100];
+    if (argc==3){
+        strcpy(nome_arquivo, argv[1]);
+        strcpy(nome_dicionario, argv[2]);
+    }
+    else{ //se os argumentos forem diferentes do que o programa aceita, ele encerra
+        printf("\nErro de abertura por quantidade de argumentos invalida\n");
+        return 1;
+    }
+    dicionario= fopen(nome_dicionario, "rt");
+    int i, tamanho;
+    if (dicionario== NULL){ //verifica se eh valido
+        printf("\nErro ao abrir o arquivo %s\n", nome_dicionario);
+        return;
+    }
+    while (fgets(linha, g_numpalavras, dicionario)!=NULL){ //passa para uma matriz de strings
+        linha[strcspn(linha, "\n")]=0;
+        strcpy(palavras_dicionario[contador_dicionario], linha);
+        contador_dicionario++;
+    }
+    fclose(dicionario);
+
+    char *texto=ler_arquivo_como_string(nome_arquivo);
+    if (texto==NULL){ //verifica se eh valido
+        printf("\nProblema na leitura do arquivo texto.txt");
+        return 1;
+    }
+
+    tam_Letras(texto); //comeca a verifica textual
+
+    corrige_palavras(texto, palavras_dicionario, nome_dicionario); //faz a verificacao de palavras
+
+    time_t agora; //para criar o arquivo novo no modelo de saida
+    time(&agora);
+    struct tm *tempo_atual;
+    tempo_atual= localtime(&agora);
+    sprintf(nome_arquivo_novo, "%02d_%02d_%04d_%02dh%02dm%02ds_%s",
+            tempo_atual->tm_mday,
+            tempo_atual->tm_mon+1,
+            tempo_atual->tm_year+1900,
+            tempo_atual->tm_hour,
+            tempo_atual->tm_min,
+            tempo_atual->tm_sec,
+            nome_arquivo);
+    FILE *novo= fopen(nome_arquivo_novo, "w+");
+    fprintf(novo, "%s", texto);
+    fclose(novo); //escreve no arquivo novo, fecha e encerra o programa
+}
